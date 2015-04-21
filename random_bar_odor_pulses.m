@@ -1,16 +1,18 @@
 %% script to present randomly moving bar signal with stimulus
 
 %% set parameters
-dur = 180; % duration (s)
+dur = 120; % duration (s)
 bar_dt = .05; % bar position update interval (s)
-barpos_range = 192;
+barpos_range = 96;
 timesteps = 0:bar_dt:10;
 std_angle = 45;
-smoothing = .5; % approx autocorrelation time (s)
+smoothing = .2; % approx autocorrelation time (s)
 
 % stim parameters
-valve_open_times = [90 91 92 93];
-valve_close_times = [90.5 91.5 92.5 93.5];
+%valve_open_times = [90 91 92 93];
+%valve_close_times = [90.5 91.5 92.5 93.5];
+valve_open_times = [65 66 67];
+valve_close_times = [65.5 66.5 67.5];
 
 % valve control parameters
 numValves = 2.1;    % 1, 2, or 2.1 (where 2.1 delivers same pulse to both lines)
@@ -19,7 +21,7 @@ gain_x = -3;        % set gain in x direction
 Vopen = 2;          % voltage to feed to valve power supplys
 valve_dt = 0.001;         % time step size (s)
 ypos = 1;           % y position of visual stimulus (set to 1)
-valve_open_signal = [2 0];
+valve_open_signal = [0 2];
 
 % calculate min and max barpos and other params
 ntimesteps = round(dur/bar_dt);
@@ -31,7 +33,7 @@ smoothing_filter_time_vec = (-3*smoothing_filter_std):(3*smoothing_filter_std);
 smoothing_filter = normpdf(smoothing_filter_time_vec, 0, smoothing_filter_std);
 
 %% generate white noise position signal
-white_noise_pos = normrnd(0, std_angle, ntimesteps, 1);
+white_noise_pos = std_angle*randn(ntimesteps, 1);
 time_vec = (0:length(white_noise_pos)-1)*bar_dt;
 % smooth white noise signal
 smoothed_pos = conv(white_noise_pos, smoothing_filter, 'same');
@@ -45,7 +47,7 @@ xlabel('t (s)')
 ylabel('barpos','fontsize',16)
 
 % convert signal to signals sendable by controller
-smoothed_pos = mod(smoothed_pos, 10);
+smoothed_pos = mod(smoothed_pos, barpos_range) + 1;
 
 %% initialize valves
 analogOutSession = daq.createSession('ni');
@@ -67,6 +69,8 @@ pause(5); % Wait for panel to initialize
 
 Panel_com('stop'); % make sure panel is stopped so we can send signals
 
+disp('Press record now.');
+pause(5);
 %% start sequence
 next_barpos_index = 1;
 next_barpos_update = 0; % in seconds
@@ -74,6 +78,8 @@ next_barpos_update = 0; % in seconds
 next_valve_index = 1;
 next_valve_open_time = valve_open_times(1);
 next_valve_close_time = valve_close_times(1);
+
+disp('Starting visual sequence.');
 
 tic
 while toc < dur
@@ -114,3 +120,6 @@ while toc < dur
         end
     end
 end
+
+Panel_com('set_position', [1 1]);
+disp('Visual sequence over.');

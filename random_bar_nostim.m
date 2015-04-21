@@ -1,12 +1,15 @@
 %% script to present randomly moving bar signal
 
 %% set parameters
-dur = 180; % duration (s)
+dur = 120; % duration (s)
 dt = .05; % update interval
-barpos_range = 192;
+barpos_range = 96;
 timesteps = 0:dt:10;
 std_angle = 45;
-smoothing = .5; % approx autocorrelation time (s)
+smoothing = .2; % approx autocorrelation time (s)
+tp = .05;           % minimum time that must pass between arena commands
+gain_x = -3;        % set gain in x direction
+ypos = 1;
 
 % calculate min and max barpos and other params
 ntimesteps = round(dur/dt);
@@ -18,7 +21,8 @@ smoothing_filter_time_vec = (-3*smoothing_filter_std):(3*smoothing_filter_std);
 smoothing_filter = normpdf(smoothing_filter_time_vec, 0, smoothing_filter_std);
 
 %% generate white noise position signal
-white_noise_pos = normrnd(0, std_angle, ntimesteps, 1);
+%white_noise_pos = normrnd(0, std_angle, ntimesteps, 1);
+white_noise_pos = std_angle*randn(ntimesteps, 1);
 time_vec = (0:length(white_noise_pos)-1)*dt;
 % smooth white noise signal
 smoothed_pos = conv(white_noise_pos, smoothing_filter, 'same');
@@ -32,7 +36,7 @@ xlabel('t (s)')
 ylabel('barpos','fontsize',16)
 
 % convert signal to signals sendable by controller
-smoothed_pos = mod(smoothed_pos, 10);
+smoothed_pos = mod(smoothed_pos, barpos_range) + 1;
 
 %% open PControl
 PControl;
@@ -47,9 +51,14 @@ pause(5); % Wait for panel to initialize
 
 Panel_com('stop'); % make sure panel is stopped so we can send signals
 
+disp('Press record now.');
+pause(5);
+
 %% start sequence
 next_barpos_index = 1;
 next_barpos_update = 0; % in seconds
+
+disp('Starting visual sequence.');
 
 tic
 while toc < dur
@@ -66,3 +75,5 @@ while toc < dur
         end
     end
 end
+Panel_com('set_position', [1 1]);
+disp('Visual sequence over.');

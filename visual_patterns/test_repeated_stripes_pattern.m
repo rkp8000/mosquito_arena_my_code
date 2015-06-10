@@ -27,7 +27,6 @@ pattern.Pats = Pats; % put data in structure
 pattern.Panel_map = 1:1:12; % define panel structure vector 
 pattern.BitMapIndex = process_panel_map(pattern);
 pattern.data = Make_pattern_vector(pattern);
-directory_name = '/Users/rkp/Dropbox/Repositories/mosquito_arena_pattern_data';
-fpath = [directory_name '/Pattern_repeated_stripes_number_' ...
+fname = ['Pattern_repeated_stripes_number_' ...
     num2str(NSTRIPES) '_width_' num2str(STRIPE_WIDTH) 'px']; % name must begin with ?Pattern_? 
-save(fpath, 'pattern');
+save(fname, 'pattern');

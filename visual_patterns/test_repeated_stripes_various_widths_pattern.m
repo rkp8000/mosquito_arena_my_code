@@ -5,7 +5,7 @@ NUM_X = 96;
 
 interstripe_distance = NUM_X / NSTRIPES;
 
-stripe_patterns = ones(8,96,length(STRIPE_WIDTHS)); %dark pixels for the stripe
+stripe_patterns = ones(16,96,length(STRIPE_WIDTHS)); %dark pixels for the stripe
 % fill in stripes
 for wctr = 1:length(STRIPE_WIDTHS)
     stripe_width = STRIPE_WIDTHS(wctr);
@@ -20,7 +20,7 @@ pattern.y_num = length(STRIPE_WIDTHS); % There is no vertical motion; only one f
 pattern.num_panels = 12; % This is the number of unique Panel IDs required.
 pattern.gs_val = 1; % This pattern will be binary , so grey scale code is 1;
 
-Pats = zeros(8, 96, pattern.x_num, pattern.y_num);
+Pats = zeros(16, 96, pattern.x_num, pattern.y_num);
 
 for wctr = 1:length(STRIPE_WIDTHS)
     Pats(:, :, 1, wctr) = stripe_patterns(:,:,wctr);
@@ -33,5 +33,5 @@ pattern.Pats = Pats; % put data in structure
 pattern.Panel_map = 1:1:12; % define panel structure vector 
 pattern.BitMapIndex = process_panel_map(pattern);
 pattern.data = Make_pattern_vector(pattern);
-fname = ['Pattern_repeated_stripes_varoius_widths_number_' num2str(NSTRIPES)]; % name must begin with ?Pattern_? 
+fname = ['Pattern_repeated_stripes_various_widths_number_' num2str(NSTRIPES)]; % name must begin with ?Pattern_? 
 save(fname, 'pattern');

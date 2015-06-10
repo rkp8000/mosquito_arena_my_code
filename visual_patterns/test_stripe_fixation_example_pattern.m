@@ -11,8 +11,8 @@ for j = 2:96    % use ShiftMatrixPats to rotate stripe image
 end
 
 pattern.Pats = Pats; % put data in structure 
-pattern.Panel_map = 1:1:12; % define panel structure vector 
+pattern.Panel_map = [12 8 4 11 7 3 10 6 2 9 5 1]; % define panel structure vector 
 pattern.BitMapIndex = process_panel_map(pattern);
 pattern.data = Make_pattern_vector(pattern);
-fname = ['Pattern_stripe_fixation_example']; % name must begin with ?Pattern_? 
+fname = 'Pattern_stripe_fixation_example'; % name must begin with ?Pattern_? 
 save(fname, 'pattern');

@@ -1,77 +1,36 @@
-%% script to present randomly moving bar signal
+% run PControl and set things up before running this script
 
-%% set parameters
-dur = 1000; % duration (s)
-dt = .05; % update interval
-barpos_range = 96;
-timesteps = 0:dt:10;
-std_vel = 100;
-smoothing = .2; % approx autocorrelation time (s)
-tp = .05;           % minimum time that must pass between arena commands
-gain_x = -3;        % set gain in x direction
-ypos = 4;
+%%
+INSECT = '';
+Y = 0; % which stripe set to use (1 - 2 stripes, 2 - 4 stripes, 3 - 6 stripes, 4 - 8 stripes, 5 - 12 stripes)
 
-% calculate min and max barpos and other params
-ntimesteps = round(dur/dt);
+DATE = datestr(now, 'YYMMDD');
+DURATION = 10 * 60; % in seconds
+STARTX = 1; % starting x position
+EDR_DIR = 'C:\Users\researcher\Documents\Rich\edr_files_visual_expt';
 
-% get smoothing filter
-smoothing_filter_std = round(smoothing/dt);
-smoothing_filter_time_vec = (-3*smoothing_filter_std):(3*smoothing_filter_std);
-smoothing_filter = normpdf(smoothing_filter_time_vec, 0, smoothing_filter_std);
-
-%% generate white noise position signal
-%white_noise_pos = normrnd(0, std_angle, ntimesteps, 1);
-white_noise_vel = std_vel*randn(ntimesteps, 1);
-time_vec = (0:length(white_noise_vel)-1)*dt;
-pos = cumsum(white_noise_vel)*dt;
-
-% smooth white noise signal
-smoothed_pos = conv(pos, smoothing_filter, 'same');
-
-% convert signal to signals sendable by controller
-smoothed_pos = mod(smoothed_pos, barpos_range) + 1;
-figure('color','w');
-plot(time_vec, smoothed_pos, 'k', 'linewidth', 2);
-
-%% open PControl
-if first_trial
-    PControl;
-    pause(10);
-
-    %% initialize arena
-    Panel_com('set_pattern_id', 1); pause(tp);                  % our card has only one pattern
-    Panel_com('set_mode', [3 0]); pause(tp);                    % closed loop in x, open loop in y (0: open loop, 1: closed loop, 2: both, 3: external input sets position, 4: internal fn generator sets position, 5: internal fn generator debug mode)
-    Panel_com('set_position', [1 ypos]); pause(tp);             % sets to [0 0] (Subtracts 1 because MATLAB indices start at 1 instead of 0)
-    Panel_com('send_gain_bias', [gain_x 0 0 0]); pause(tp);     % e.g [10 -10 0 20] sets gain_x = 1X, bias_x = -0.5 V, gain_y = 0, bias_y = 1 V (check PControl to verify this).
-    pause(5); % Wait for panel to initialize
-
-    Panel_com('stop'); % make sure panel is stopped so we can send signals
-    first_trial = 0;
+% create com server connected to WinEDR
+if ~exist('WinEDR','var')
+    WinEDR = actxserver('winedr.auto');
 end
-pause(3);
-disp('Press record now.');
-pause(5);
 
-%% start sequence
-next_barpos_index = 1;
-next_barpos_update = 0; % in seconds
+%%
+Panel_com('stop');
+Panel_com('set_position', [STARTX, Y]);
+pause(1);
+Panel_com('start');
 
-disp('Starting visual sequence.');
+%% begin recording
+recording_start = datestr(now,'HHMMSS');
+fname = [DATE '_' recording_start '_stripes_insect' INSECT '_ypos_' num2str(Y)];
+edr_path = [EDR_DIR '\' fname];
 
-tic
-while toc < dur
-    if toc >= next_barpos_update
-        % set bar position
-        barpos = smoothed_pos(next_barpos_index);
-        Panel_com('set_position', [barpos ypos]);
-        % get next update times, etc.
-        next_barpos_index = next_barpos_index + 1;
-        if next_barpos_index <= ntimesteps
-            next_barpos_update = time_vec(next_barpos_index);
-        else
-            next_barpos_update = Inf;
-        end
-    end
+WinEDR.NewFile(edr_path);
+WinEDR.StartRecording;
+
+tic;
+while toc < tic + DURATION
+    
 end
-Panel_com('set_position', [1 1]);
-disp('Visual sequence over.');
+
+WinEDR.StopRecording;

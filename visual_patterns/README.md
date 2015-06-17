@@ -11,6 +11,8 @@ One common stimulus set you will probably have is an image that can be displayed
 Creating a pattern:
 To create a pattern, you have to specify the image you want at each XPOS and YPOS. The code that comes with the arena has some useful functions such as ShiftMatrix that help you create this. Check out the code for test_repeated_stripes_pattern.m for an example of how to do this. At the end of all this, you should have a 4D array called Pats that contains all your images and is indexed according to the description above.
 
+Check out test_repeated_stripes_various_numbers_pattern.m for an example of using YPOS to specify different sets of images. Here XPOS is the usual x-shift, but different YPOSs correspond to different numbers of stripes on the display.
+
 Once you have the Pats array, you have to bind it to a MATLAB struct called "pattern" and which contains some other meta information.
 
 The specific fields that "pattern" must have are:
@@ -32,8 +34,33 @@ pattern.data = Make_pattern_vector(pattern);
 
 Finally, before you load the pattern to an SD card, you have to save the struct to a .mat file, which you can do using:
 
-save('path\to\file', 'pattern');
+save('path\to\Pattern_this_is_my_pattern', 'pattern');
 
-Creating a function:
+Note that the pattern filename must start with "Pattern"
 
-Driving a pattern with a function:
+
+The next step is to actually load the patterns onto the SD card. This is done through the PControl GUI and should be done on the computer connected to the arena. Follow these steps:
+
+0. Insert SD card into drive/card reader
+1. Open MATLAB
+2. Run the command PControl - this will open the PControl window
+3. Click on the configurations menu and select "load patterns to SD card"
+4. Add the pattern or patterns you have saved (the Pattern_blah_blah.mat files you made).
+5. Click "Make Image". A few notes indicating the success should output on the MATLAB console.
+6. Click "Burn". You should see more notes of success.
+7. Safely eject SD card.
+
+Creating a function to drive XPOS or YPOS:
+In closed loop, cycling through the images corresponding to different XPOSs is controlled by the left-minus-right wingbeat amplitude.
+In open loop, you can specify the function that you want to control the times at which different images are shown. Once the function is made and stored on the SD card (see below) you can tell the controller to use this function to drive the XPOS or YPOS through PControl. For either the X or Y portions of PControl select Position: function X sets position. Then click on configurations and select "set position functions" and select the function that you want to drive that coordinate.
+
+How to make a position function:
+The position function is simply a vector of integers specifying the order in which images are to be displayed. If you have 96 XPOSs in your Pats array, then the values that the position function vector will take on are integers from 1 to 96, inclusive. When you use PControl to tell the controller which function to use to drive the XPOSs or YPOSs of the current pattern, you also select the display rate, which specifies how fast the display cycles through the images indicated in your function vector. For example, if your function vector is [1 2 3 4 5 6 7 8 9 10], the display rate is 50 Hz, and this function is bound to XPOS and YPOS is set to 1, then when you click start, the first 10 images in your Pats array (pattern.Pats(:, :, 1:10, YPOS)) will be looped through over the course of 1/5 of a second. 
+
+To actually make a position function simply create the vector corresponding to the sequence of XPOSs or YPOSs you want and save it with a filename starting with "position_function".
+
+Loading the function onto the SD card is similar to loading a pattern, except that you select "load position function to SD card" from the configurations menu. All the other steps are the same.
+
+It is also possible to make a velocity function that drives the rate at which the images in pattern.Pats are cycled through by the arena, but I haven't figured out all the details of how to do that yet.
+
+

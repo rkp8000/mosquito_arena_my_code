@@ -64,3 +64,5 @@ Loading the function onto the SD card is similar to loading a pattern, except th
 It is also possible to make a velocity function that drives the rate at which the images in pattern.Pats are cycled through by the arena, but I haven't figured out all the details of how to do that yet.
 
 
+
+More information can be found in the flight simulator user guide, located at: http://www.iorodeo.com/sites/default/files/u3/flight_simulator_user_guide3.doc

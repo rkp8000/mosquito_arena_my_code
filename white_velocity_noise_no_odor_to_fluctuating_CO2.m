@@ -3,11 +3,12 @@
 %%
 INSECT = 'test';
 Y = 4; % which stripe set to use (1 - 2 stripes, 2 - 4 stripes, 3 - 6 stripes, 4 - 8 stripes, 5 - 12 stripes)
-DURATION = 7 * 60; % in seconds
-PULSE_TRAIN_NAME = 'random_bernoulli_train_duration_30s_pulse_duration_500ms_pulse_frequency_0.25Hz.mat';
+DURATION = 0.5 * 60; % in seconds
+PULSE_TRAIN_NAME = 'random_bernoulli_train_duration_1200s_pulse_duration_500ms_pulse_frequency_0.5Hz.mat';
 PULSE_TRAIN_FILE = fullfile('odor_patterns', PULSE_TRAIN_NAME);
 
 VALVE_OPEN_SIGNAL = [2 0];
+VALVE_CLOSE_SIGNAL = [0 0];
 
 DATE = datestr(now, 'YYmmDD');
 STARTX = 91; % starting x position
@@ -25,6 +26,8 @@ end
 %% 
 analogOutSession = daq.createSession('ni');
 analogOutSession.Rate = 1/VALVE_DT;
+
+numValves = 2.1; 
 
 if numValves == 1
     analogOutSession.addAnalogOutputChannel('Dev1', 0, 'Voltage');
